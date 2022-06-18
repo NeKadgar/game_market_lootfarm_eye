@@ -1,4 +1,6 @@
 import requests
+from decimal import Decimal
+
 from sqlalchemy import select
 from background.celery_app import app as celery_app
 from models.dota_item import DotaItem, DotaItemHistory
@@ -40,6 +42,19 @@ def parse(self):
             in_reserve=dota_item.get("res"),
         )
         new_item.history.append(item_history)
+
         self.session.commit()
-        break
-    return
+        celery_app.send_task(
+            name="update_service_price",
+            queue="items_base_queue",
+            kwargs={
+                "game_id": 570,
+                "item_hash_name": new_item.name,
+                "price": Decimal(item_history.price/100),
+                "service": "LOOT.FARM"
+            }
+        )
+    return {
+        "success": True,
+        "updated": len(items)
+    }

@@ -1,11 +1,27 @@
 version: '3.3'
 
 services:
-  db:
-    image: postgres:13.3
-    environment:
-      POSTGRES_DB: "db"
-      POSTGRES_USER: "user"
-      POSTGRES_PASSWORD: "pass"
+  server:
+    build: .
+    env_file:
+      - .env
+    command: bash -c "
+      alembic upgrade head && 
+      uvicorn main:app --host 0.0.0.0 --port 80"
     ports:
-      - "5432:5432"
+      - "80:80"
+  beat:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    command: bash -c "
+      celery -A background.celery_app.app beat"
+  worker:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    command: bash -c "
+      alembic upgrade head &&
+      celery -A background.celery_app.app worker --loglevel=INFO -Q lootfarm_queue -P solo"

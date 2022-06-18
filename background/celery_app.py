@@ -3,11 +3,13 @@ from datetime import timedelta
 from kombu import Exchange, Queue
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from asgiref.sync import async_to_sync
 
 from server.config import config
 
 app = Celery(__name__, include=['background.tasks'], )
+
+app.conf.broker_url = config.CELERY_BROKER_URL
+app.conf.result_backend = config.CELERY_RESULT_BACKEND
 
 default_exchange = Exchange("default_lootfarm", type="direct")  # Internal connections queue
 providers_exchange = Exchange("providers_exchange", type="direct")  # External connections queue
@@ -43,10 +45,10 @@ app.conf.beat_schedule = {
     # Executes every 2 hours
     "parse": {
         "task": "background.tasks.parser.parse",
-        "schedule": timedelta(hours=2),
+        "schedule": timedelta(minutes=30),
         'options': {
             'queue': 'lootfarm_queue',
-            'expires': timedelta(hours=2),
+            # 'expires': timedelta(hours=2),
         },
     },
 }

@@ -19,7 +19,7 @@ async def get_general_info_endpoint(db_session: AsyncSession = Depends(get_db)):
     return {
         "total items": count,
         "total history items": history_count,
-        "latest_history": latest_history_item.date
+        "latest_history": latest_history_item.date if latest_history_item else None
     }
 
 

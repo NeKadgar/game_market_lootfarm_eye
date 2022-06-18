@@ -45,7 +45,7 @@ app.conf.beat_schedule = {
     # Executes every 2 hours
     "parse": {
         "task": "background.tasks.parser.parse",
-        "schedule": timedelta(minutes=30),
+        "schedule": timedelta(hours=3),
         'options': {
             'queue': 'lootfarm_queue',
             # 'expires': timedelta(hours=2),

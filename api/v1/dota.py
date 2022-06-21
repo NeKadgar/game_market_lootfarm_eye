@@ -50,8 +50,14 @@ async def get_item_by_id_endpoint(item_id: int, db_session: AsyncSession = Depen
 
     return {
         "id": item.id,
-        "price": item.latest_history.price,
-        "date": item.latest_history.date
+        "name": item.name,
+        "history": [
+            {
+                "price": history.price,
+                "date": history.date,
+                "count": history.count
+            } for history in item.history
+        ]
     }
 
 
